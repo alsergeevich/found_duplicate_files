@@ -2,12 +2,13 @@
 
 use std::path::PathBuf;
 use std::collections::{HashMap, VecDeque};
-
+use std::time::Instant;
 mod md5;
 mod group;
 
 
 fn main() -> Result<(), std::io::Error> {
+    let start = Instant::now(); //засекаем время начала работы программы
     
     // Собираем все аргументы из терминала и склеиваем их пробелом.
     // Это спасет, если пользователь передал путь с пробелами без кавычек в терминале.
@@ -34,9 +35,10 @@ fn main() -> Result<(), std::io::Error> {
 
     //теперь для каждой группы файлов с одинаковым частичным md5 хеш вычисляем полный md5 хеш
     let full_hash_to_found_duplicate = group::group_files_by_full_hash(partial_hash_to_found_duplicate)?;
-    
-    println!("Найдено дубликатов: {}", full_hash_to_found_duplicate.len());
 
+    let total_duplicate_files = full_hash_to_found_duplicate.len();
+
+    let duration = start.elapsed(); //засекаем время окончания работы программы
     //выводим результат
     for (hash, paths) in full_hash_to_found_duplicate {
         println!("Дубликаты, MD5: {}", hash);
@@ -45,6 +47,9 @@ fn main() -> Result<(), std::io::Error> {
         }
         println!();
     }
+
+    println!("Найдено дубликатов: {}", total_duplicate_files);
+    println!("Время работы программы: {:?}", duration); //выводим время работы программы
     
     Ok(())
 }
