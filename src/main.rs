@@ -24,7 +24,8 @@ fn main() -> Result<(), std::io::Error> {
     // println!("Путь к директории (сырой вид): {:?}", path);
 
     let vec_files = group::directory_traversal(path)?;
-    println!("Будет обработано файлов: {}", vec_files.len());
+    
+    let total_files = vec_files.len(); //записываем количество найденных файлов
 
     //теперь у нас есть все файлы в векторе vec_files
     //теперь группируем файлы по размеру
@@ -39,6 +40,7 @@ fn main() -> Result<(), std::io::Error> {
     let total_duplicate_files = full_hash_to_found_duplicate.len();
 
     let duration = start.elapsed(); //засекаем время окончания работы программы
+
     //выводим результат
     for (hash, paths) in full_hash_to_found_duplicate {
         println!("Дубликаты, MD5: {}", hash);
@@ -48,6 +50,7 @@ fn main() -> Result<(), std::io::Error> {
         println!();
     }
 
+    println!("Всего найдено файлов: {}", total_files);
     println!("Найдено дубликатов: {}", total_duplicate_files);
     println!("Время работы программы: {:?}", duration); //выводим время работы программы
     
