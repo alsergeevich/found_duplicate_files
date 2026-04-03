@@ -1,8 +1,10 @@
 use std::collections::{HashMap, VecDeque};
 use std::fs;
 use std::path::PathBuf;
+use rayon::iter::IntoParallelIterator;
+use rayon::iter::ParallelIterator;
 use crate::md5::*;
-
+use std::sync::Mutex;
 //функция нулевого шага, обходит все папки в дереве и собирает все файлы
 pub fn directory_traversal(path: PathBuf) -> Result<Vec<PathBuf>, std::io::Error> {
     let mut vec_dirs = VecDeque::new();
@@ -91,35 +93,37 @@ pub fn group_files_by_partial_hash(group_by_size: HashMap<u64, Vec<PathBuf>>) ->
         for path in paths {
             match partial_hash_file(&path) {
                 Ok(hash) => {
-                    map_files_by_hash.entry((size, hash)).or_insert_with(Vec::new).push(path);
+                    map_files_by_hash
+                        .entry((size, hash))
+                        .or_insert_with(Vec::new)
+                        .push(path);
                 }
                 Err(e) => {
                     eprintln!("Ошибка вычисления хеша для файла {:?} : {}", path, e);
-                    continue;
                 }
             }
         }
     }
-    map_files_by_hash.retain(|_, paths| paths.len() > 1);  //удаляем все записи где только один файл
     Ok(map_files_by_hash)
 }
-
 //функция третьего шага, группирует файлы по полному хешу
 pub fn group_files_by_full_hash(group_by_partial_hash: HashMap<(u64, String), Vec<PathBuf>>) -> Result<HashMap<String, Vec<PathBuf>>, std::io::Error> {
-    let mut map_files_by_hash = HashMap::new(); //тут можно обойтись без size
-    for ((size, partial_hash), paths) in group_by_partial_hash {
-        for path in paths {
-            match full_hash_file(&path) {
-                Ok(hash) => {
-                    map_files_by_hash.entry(hash).or_insert_with(Vec::new).push(path);
-                }
-                Err(e) => {
-                    eprintln!("Ошибка вычисления хеша для файла {:?} : {}", path, e);
-                    continue;
+    let mut map_files_by_hash = Mutex::new(HashMap::new()); //тут можно обойтись без size, оборачиваем в мютекс
+    
+    group_by_partial_hash.into_par_iter()
+        .for_each(|((_, _), paths)| {
+            for path in paths {
+                match full_hash_file(&path) {
+                    Ok(hash) => {
+                        map_files_by_hash.lock().unwrap().entry(hash).or_insert_with(Vec::new).push(path);
+                    }
+                    Err(e) => {
+                        eprintln!("Ошибка вычисления хеша для файла {:?} : {}", path, e);
+                    }
                 }
             }
-        }
-    }
+        });
+    let mut map_files_by_hash = map_files_by_hash.into_inner().unwrap();
     map_files_by_hash.retain(|_, paths| paths.len() > 1);  //удаляем все записи где только один файл
     Ok(map_files_by_hash)
 }

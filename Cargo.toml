@@ -5,3 +5,4 @@ edition = "2024"
 
 [dependencies]
 md-5 = "0.10.6"
+rayon = "1.10.0"

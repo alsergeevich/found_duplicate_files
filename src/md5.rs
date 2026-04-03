@@ -1,6 +1,5 @@
 #![allow(non_snake_case)]
 use std::{fs::OpenOptions, io::{BufReader, Read}, path::Path};
-
 use md5::{Md5, Digest};
 
 pub fn partial_hash_file<P>(path: P) -> Result<String, std::io::Error> 
