@@ -108,20 +108,19 @@ pub fn group_files_by_partial_hash(group_by_size: HashMap<u64, Vec<PathBuf>>) ->
 }
 //функция третьего шага, группирует файлы по полному хешу
 pub fn group_files_by_full_hash(group_by_partial_hash: HashMap<(u64, String), Vec<PathBuf>>) -> Result<HashMap<String, Vec<PathBuf>>, std::io::Error> {
+    let all_files: Vec<PathBuf> = group_by_partial_hash.into_values().flat_map(|paths| paths.into_iter()).collect(); //проходим по всей group_by_partial_hash и собираем все файлы в один вектор
     let mut map_files_by_hash = Mutex::new(HashMap::new()); //тут можно обойтись без size, оборачиваем в мютекс
     
-    group_by_partial_hash.into_par_iter()
-        .for_each(|((_, _), paths)| {
-            for path in paths {
-                match full_hash_file(&path) {
-                    Ok(hash) => {
-                        map_files_by_hash.lock().unwrap().entry(hash).or_insert_with(Vec::new).push(path);
+    all_files.into_par_iter()
+        .for_each(|path| {
+            match full_hash_file(&path) {
+                Ok(hash) => {
+                    map_files_by_hash.lock().unwrap().entry(hash).or_insert_with(Vec::new).push(path);
                     }
                     Err(e) => {
                         eprintln!("Ошибка вычисления хеша для файла {:?} : {}", path, e);
                     }
                 }
-            }
         });
     let mut map_files_by_hash = map_files_by_hash.into_inner().unwrap();
     map_files_by_hash.retain(|_, paths| paths.len() > 1);  //удаляем все записи где только один файл
