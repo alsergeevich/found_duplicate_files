@@ -10,20 +10,9 @@ mod group;
 fn main() -> Result<(), std::io::Error> {
     let start = Instant::now(); //засекаем время начала работы программы
     
-    // Собираем все аргументы из терминала и склеиваем их пробелом.
-    // Это спасет, если пользователь передал путь с пробелами без кавычек в терминале.
-    let collected_args: Vec<String> = std::env::args().skip(1).collect();
-    if collected_args.is_empty() {
-        eprintln!("Пожалуйста, укажите путь к директории!");
-        std::process::exit(1);
-    }
-    // Убираем случайные кавычки и пробелы с краев — иногда при копировании 
-    // или автодополнении они могут стать частью строки и ломать путь к файлу.
-    let path_dir = collected_args.join(" ").trim_matches(|c| c == '\"' || c == '\'' || c == ' ').to_string();
-    let path = PathBuf::from(&path_dir); //преобразуем путь в PathBuf
-    // println!("Путь к директории (сырой вид): {:?}", path);
+    let path = start::parse_args()?; // получаем путь к директории
 
-    let vec_files = group::directory_traversal(path)?;
+    let vec_files = group::directory_traversal(path)?; // обходим все папки в дереве и собираем все файлы
     
     let total_files = vec_files.len(); //записываем количество найденных файлов
 
