@@ -1,6 +1,6 @@
 #![allow(unused)]
 
-// === ИМПОРТЫ СТАНДАРТНОЙ БИБЛИОТЕКИ RUST ===
+
 // io: ввод-вывод для работы с терминалом и очистки экрана
 // path: работа с системными путями (преобразование в строку, проверка существования)
 // collections: HashMap используется для хранения результатов поиска
@@ -14,7 +14,7 @@ use std::time::{Instant, Duration};
 use std::sync::mpsc::{self, Receiver, Sender};
 use std::thread;
 
-// === ИМПОРТЫ СТОРОННИХ БИБЛИОТЕК ===
+
 // crossterm: управление событиями клавиатуры и режимом терминала
 use crossterm::event::{self, Event, KeyCode, KeyEvent, KeyEventKind};
 // ratatui: фреймворк для создания графического интерфейса в терминале
