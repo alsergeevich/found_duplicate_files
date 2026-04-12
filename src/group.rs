@@ -140,7 +140,7 @@ pub fn group_files_by_full_hash(mut group_by_partial_hash: HashMap<(u64, String)
             acc
         },
         )
-        .reduce(|| HashMap::new(), |mut map1: HashMap<String, Vec<PathBuf>>, map2: HashMap<String, Vec<PathBuf>>| {   //объединяем карты
+        .reduce(|| HashMap::new(), |mut map1: HashMap<String, Vec<PathBuf>>, map2: HashMap<String, Vec<PathBuf>>| {   //объединяем map1 и map2
             for (hash, paths) in map2 {
                 map1.entry(hash).or_default().extend(paths);
             }
